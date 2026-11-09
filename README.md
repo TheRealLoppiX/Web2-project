@@ -80,8 +80,8 @@ execução. O fuso horário padrão é `America/Recife`.
 ./mvnw verify
 ```
 
-Executa os testes unitários (JUnit 5 e Mockito) do serviço de ordens de serviço e do enum de transições de status, e o
-teste de integração com H2 em memória e MockMvc, que percorre o fluxo cliente → equipamento → OS até `ENTREGUE` e
+Executa os testes unitários (JUnit 5 e Mockito) dos services e do enum de transições de status, cobrindo as regras
+RN-01 a RN-10, e o teste de integração com H2 em memória e MockMvc, que percorre o fluxo cliente → equipamento → OS até `ENTREGUE` e
 verifica uma transição inválida retornando 422. Os testes não precisam do PostgreSQL nem das variáveis de ambiente.
 
 ## Endpoints
@@ -100,7 +100,7 @@ Todas as listagens são paginadas com os parâmetros `page`, `size` (padrão 20)
 | GET | `/api/equipamentos/{id}` | Consulta equipamento |
 | PUT | `/api/equipamentos/{id}` | Atualiza equipamento |
 | DELETE | `/api/equipamentos/{id}` | Remove equipamento (409 se tiver OS) |
-| POST | `/api/tecnicos` | Cadastra técnico (ativo) |
+| POST | `/api/tecnicos` | Cadastra técnico ativo (nome, e-mail e especialidade) |
 | GET | `/api/tecnicos?ativos=` | Lista técnicos (filtro opcional por ativos) |
 | GET | `/api/tecnicos/{id}` | Consulta técnico |
 | PUT | `/api/tecnicos/{id}` | Atualiza técnico |
@@ -126,7 +126,8 @@ PATCH /api/ordens-servico/1/status
 { "status": "ORCAMENTO_APROVADO", "observacao": "Aprovado por telefone." }
 ```
 
-No `PUT /api/ordens-servico/{id}`, campos não informados mantêm o valor atual da OS.
+No `PUT /api/ordens-servico/{id}`, campos não informados mantêm o valor atual da OS. Datas trafegam em ISO 8601
+(`2026-11-09T14:30:00`) no fuso `America/Recife` e valores monetários em reais, com ponto decimal.
 
 ## Ciclo de vida da OS
 
@@ -170,10 +171,12 @@ Toda falha devolve o mesmo formato; `campos` aparece apenas em erros de validaç
 
 | Código | Situação |
 |--------|----------|
-| 400 | Dados inválidos (Bean Validation, JSON mal formatado, parâmetro inválido) |
+| 400 | Dados inválidos (Bean Validation, JSON mal formatado, parâmetro inválido, método ou tipo de conteúdo não suportado) |
 | 404 | Recurso não encontrado |
 | 409 | Duplicidade ou registro com dependentes |
 | 422 | Regra de negócio violada |
+
+Erros inesperados retornam 500 no mesmo formato e são registrados no console do servidor.
 
 ## Estrutura do projeto
 
