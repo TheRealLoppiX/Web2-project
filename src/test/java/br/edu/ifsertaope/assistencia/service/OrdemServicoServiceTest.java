@@ -12,6 +12,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +24,10 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import br.edu.ifsertaope.assistencia.dto.AlteracaoStatusRequest;
 import br.edu.ifsertaope.assistencia.dto.AtribuicaoTecnicoRequest;
@@ -361,6 +366,52 @@ class OrdemServicoServiceTest {
             assertThatThrownBy(() -> service.atribuirTecnico(100L, new AtribuicaoTecnicoRequest(5L)))
                     .isInstanceOf(RegraNegocioException.class);
             verify(tecnicoService, never()).obter(any());
+        }
+    }
+
+    @Nested
+    class Listagem {
+
+        private final Pageable pagina = PageRequest.of(0, 20);
+
+        private Page<OrdemServico> vazia() {
+            return new PageImpl<>(List.of(), pagina, 0);
+        }
+
+        @Test
+        void rf17SemFiltrosListaTodas() {
+            when(ordemServicoRepository.findAll(pagina)).thenReturn(vazia());
+
+            assertThat(service.listar(null, null, null, pagina).totalElementos()).isZero();
+        }
+
+        @Test
+        void rf17FiltraPorStatus() {
+            when(ordemServicoRepository.findByStatus(StatusOrdemServico.EM_REPARO, pagina)).thenReturn(vazia());
+
+            service.listar(StatusOrdemServico.EM_REPARO, null, null, pagina);
+
+            verify(ordemServicoRepository).findByStatus(StatusOrdemServico.EM_REPARO, pagina);
+        }
+
+        @Test
+        void rf17FiltraPorClienteETecnico() {
+            when(ordemServicoRepository.findByEquipamentoClienteIdAndTecnicoId(1L, 5L, pagina)).thenReturn(vazia());
+
+            service.listar(null, 1L, 5L, pagina);
+
+            verify(ordemServicoRepository).findByEquipamentoClienteIdAndTecnicoId(1L, 5L, pagina);
+        }
+
+        @Test
+        void rf17FiltraPorStatusClienteETecnico() {
+            when(ordemServicoRepository.findByStatusAndEquipamentoClienteIdAndTecnicoId(
+                    StatusOrdemServico.CONCLUIDO, 1L, 5L, pagina)).thenReturn(vazia());
+
+            service.listar(StatusOrdemServico.CONCLUIDO, 1L, 5L, pagina);
+
+            verify(ordemServicoRepository).findByStatusAndEquipamentoClienteIdAndTecnicoId(
+                    StatusOrdemServico.CONCLUIDO, 1L, 5L, pagina);
         }
     }
 }

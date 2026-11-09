@@ -5,6 +5,7 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +28,6 @@ import br.edu.ifsertaope.assistencia.model.StatusOrdemServico;
 import br.edu.ifsertaope.assistencia.model.Tecnico;
 import br.edu.ifsertaope.assistencia.repository.HistoricoStatusRepository;
 import br.edu.ifsertaope.assistencia.repository.OrdemServicoRepository;
-import br.edu.ifsertaope.assistencia.repository.OrdemServicoSpecifications;
 
 @Service
 @Transactional(readOnly = true)
@@ -69,10 +69,39 @@ public class OrdemServicoService {
 
     public PaginaResponse<OrdemServicoResponse> listar(StatusOrdemServico status, Long clienteId, Long tecnicoId,
             Pageable pageable) {
-        return PaginaResponse.de(
-                ordemServicoRepository.findAll(OrdemServicoSpecifications.filtrar(status, clienteId, tecnicoId),
-                        pageable),
+        return PaginaResponse.de(buscarComFiltros(status, clienteId, tecnicoId, pageable),
                 OrdemServicoMapper::paraResponse);
+    }
+
+    private Page<OrdemServico> buscarComFiltros(StatusOrdemServico status, Long clienteId, Long tecnicoId,
+            Pageable pageable) {
+        boolean porStatus = status != null;
+        boolean porCliente = clienteId != null;
+        boolean porTecnico = tecnicoId != null;
+
+        if (porStatus && porCliente && porTecnico) {
+            return ordemServicoRepository.findByStatusAndEquipamentoClienteIdAndTecnicoId(status, clienteId,
+                    tecnicoId, pageable);
+        }
+        if (porStatus && porCliente) {
+            return ordemServicoRepository.findByStatusAndEquipamentoClienteId(status, clienteId, pageable);
+        }
+        if (porStatus && porTecnico) {
+            return ordemServicoRepository.findByStatusAndTecnicoId(status, tecnicoId, pageable);
+        }
+        if (porCliente && porTecnico) {
+            return ordemServicoRepository.findByEquipamentoClienteIdAndTecnicoId(clienteId, tecnicoId, pageable);
+        }
+        if (porStatus) {
+            return ordemServicoRepository.findByStatus(status, pageable);
+        }
+        if (porCliente) {
+            return ordemServicoRepository.findByEquipamentoClienteId(clienteId, pageable);
+        }
+        if (porTecnico) {
+            return ordemServicoRepository.findByTecnicoId(tecnicoId, pageable);
+        }
+        return ordemServicoRepository.findAll(pageable);
     }
 
     public OrdemServicoResponse buscar(Long id) {
