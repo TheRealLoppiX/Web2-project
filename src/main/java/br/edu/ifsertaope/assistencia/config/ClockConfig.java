@@ -13,6 +13,6 @@ public class ClockConfig {
 
     @Bean
     public Clock clock() {
-        return Clock.system(ZoneId.of(Application.FUSO_HORARIO));
+        return Clock.tickSeconds(ZoneId.of(Application.FUSO_HORARIO));
     }
 }

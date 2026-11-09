@@ -2,6 +2,7 @@ package br.edu.ifsertaope.assistencia.controller;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -32,6 +33,8 @@ import com.jayway.jsonpath.JsonPath;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class FluxoOrdemServicoIntegrationTest {
+
+    private static final String DATA_ISO_8601 = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}";
 
     @Autowired
     private MockMvc mockMvc;
@@ -122,7 +125,7 @@ class FluxoOrdemServicoIntegrationTest {
                 "descricaoDefeito", "Notebook não liga"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("AGUARDANDO_ANALISE"))
-                .andExpect(jsonPath("$.dataAbertura", notNullValue())));
+                .andExpect(jsonPath("$.dataAbertura", matchesPattern(DATA_ISO_8601))));
 
         enviar(put("/api/ordens-servico/{id}", osId), Map.of(
                 "laudoTecnico", "Cooler obstruído e pasta térmica ressecada.",
@@ -193,7 +196,7 @@ class FluxoOrdemServicoIntegrationTest {
                 .andExpect(jsonPath("$.erro").value("Regra de negócio violada"))
                 .andExpect(jsonPath("$.mensagem").value("Transição de AGUARDANDO_ANALISE para ENTREGUE não permitida."))
                 .andExpect(jsonPath("$.caminho").value("/api/ordens-servico/" + osId + "/status"))
-                .andExpect(jsonPath("$.timestamp", notNullValue()))
+                .andExpect(jsonPath("$.timestamp", matchesPattern(DATA_ISO_8601)))
                 .andExpect(jsonPath("$.campos").doesNotExist());
 
         mockMvc.perform(get("/api/ordens-servico/{id}", osId))
