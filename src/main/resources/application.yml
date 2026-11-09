@@ -1,0 +1,38 @@
+server:
+  port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+
+spring:
+  application:
+    name: assistencia
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/assistencia}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: America/Recife
+  jackson:
+    time-zone: America/Recife
+    serialization:
+      write-dates-as-timestamps: false
+  data:
+    web:
+      pageable:
+        default-page-size: 20
+        max-page-size: 100
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
