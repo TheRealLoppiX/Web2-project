@@ -215,6 +215,14 @@ class FluxoOrdemServicoIntegrationTest {
     }
 
     @Test
+    void especialidadeDoTecnicoEhObrigatoria() throws Exception {
+        enviar(post("/api/tecnicos"), Map.of("nome", "Sem especialidade", "email", "sem@assistencia.com"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.campos[0].campo").value("especialidade"))
+                .andExpect(jsonPath("$.campos[0].mensagem").value("O campo especialidade é obrigatório."));
+    }
+
+    @Test
     void recursoInexistenteRetorna404() throws Exception {
         mockMvc.perform(get("/api/ordens-servico/{id}", 999_999))
                 .andExpect(status().isNotFound())
@@ -224,7 +232,7 @@ class FluxoOrdemServicoIntegrationTest {
     @Test
     void tecnicoDesativadoNaoRecebeOs() throws Exception {
         long osId = abrirOs(criarEquipamento(criarCliente("inativo@email.com")));
-        long tecnicoId = id(enviar(post("/api/tecnicos"), Map.of("nome", "Ana", "email", "ana@assistencia.com"))
+        long tecnicoId = id(enviar(post("/api/tecnicos"), Map.of("nome", "Ana", "email", "ana@assistencia.com", "especialidade", "software"))
                 .andExpect(status().isCreated()));
 
         mockMvc.perform(delete("/api/tecnicos/{id}", tecnicoId)).andExpect(status().isNoContent());

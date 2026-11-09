@@ -14,7 +14,7 @@ public final class TecnicoMapper {
         Tecnico tecnico = new Tecnico();
         tecnico.setNome(origem.nome().trim());
         tecnico.setEmail(Textos.normalizarEmail(origem.email()));
-        tecnico.setEspecialidade(Textos.vazioParaNulo(origem.especialidade()));
+        tecnico.setEspecialidade(origem.especialidade().trim());
         tecnico.setAtivo(true);
         return tecnico;
     }
@@ -22,7 +22,7 @@ public final class TecnicoMapper {
     public static void copiar(TecnicoAtualizacaoRequest origem, Tecnico destino) {
         destino.setNome(origem.nome().trim());
         destino.setEmail(Textos.normalizarEmail(origem.email()));
-        destino.setEspecialidade(Textos.vazioParaNulo(origem.especialidade()));
+        destino.setEspecialidade(origem.especialidade().trim());
         if (origem.ativo() != null) {
             destino.setAtivo(origem.ativo());
         }

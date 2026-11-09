@@ -21,7 +21,7 @@ public class Tecnico {
     @Column(nullable = false, length = 120, unique = true)
     private String email;
 
-    @Column(length = 80)
+    @Column(nullable = false, length = 80)
     private String especialidade;
 
     @Column(nullable = false)

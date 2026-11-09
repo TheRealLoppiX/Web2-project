@@ -19,6 +19,7 @@ public record TecnicoAtualizacaoRequest(
         String email,
 
         @Schema(example = "hardware")
+        @NotBlank(message = "O campo especialidade é obrigatório.")
         @Size(max = 80, message = "O campo especialidade deve ter no máximo 80 caracteres.")
         String especialidade,
 
