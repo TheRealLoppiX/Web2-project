@@ -223,6 +223,13 @@ class FluxoOrdemServicoIntegrationTest {
     }
 
     @Test
+    void metodoNaoSuportadoRetorna400() throws Exception {
+        mockMvc.perform(delete("/api/ordens-servico/{id}", 1))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.mensagem").value("Método DELETE não suportado para esta rota."));
+    }
+
+    @Test
     void recursoInexistenteRetorna404() throws Exception {
         mockMvc.perform(get("/api/ordens-servico/{id}", 999_999))
                 .andExpect(status().isNotFound())

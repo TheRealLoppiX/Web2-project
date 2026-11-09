@@ -120,14 +120,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErroResponse> metodoNaoSuportado(HttpRequestMethodNotSupportedException ex,
             HttpServletRequest request) {
-        return responder(HttpStatus.METHOD_NOT_ALLOWED,
+        return responder(HttpStatus.BAD_REQUEST,
                 "Método " + ex.getMethod() + " não suportado para esta rota.", request, null);
     }
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public ResponseEntity<ErroResponse> tipoDeMidia(HttpMediaTypeNotSupportedException ex,
             HttpServletRequest request) {
-        return responder(HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+        return responder(HttpStatus.BAD_REQUEST,
                 "Tipo de conteúdo não suportado. Envie os dados em application/json.", request, null);
     }
 
@@ -156,8 +156,6 @@ public class GlobalExceptionHandler {
             case NOT_FOUND -> "Recurso não encontrado";
             case CONFLICT -> "Conflito";
             case UNPROCESSABLE_ENTITY -> "Regra de negócio violada";
-            case METHOD_NOT_ALLOWED -> "Método não permitido";
-            case UNSUPPORTED_MEDIA_TYPE -> "Tipo de mídia não suportado";
             default -> "Erro interno";
         };
     }
