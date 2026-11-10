@@ -2,6 +2,8 @@
 
 API REST para gerenciamento de pedidos (ordens de serviço) de uma assistência técnica de informática, desenvolvida
 para a disciplina de JEE do IFSertão-PE – Campus Salgueiro. A especificação completa está em
+[docs/SRS_Gerenciamento_Pedidos_Assistencia_Tecnica_v1_1.docx](docs/SRS_Gerenciamento_Pedidos_Assistencia_Tecnica_v1_1.docx)
+(versão 1.1, com autenticação e perfis de acesso); a versão 1.0 original continua em
 [docs/SRS_Gerenciamento_Pedidos_Assistencia_Tecnica_v1_0.pdf](docs/SRS_Gerenciamento_Pedidos_Assistencia_Tecnica_v1_0.pdf).
 
 A API controla o ciclo de vida das OS, da entrada do equipamento até a entrega ao cliente: cadastro de clientes,
