@@ -1,13 +1,55 @@
 {
   "info": {
     "name": "API de Pedidos - Assistência Técnica",
-    "description": "Requisições na ordem do fluxo de atendimento: cadastros, abertura da OS, laudo e orçamento, atribuição de técnico, reparo, conclusão, entrega e consultas. Execute em sequência (Collection Runner) para que os ids sejam propagados pelas variáveis da coleção.",
+    "description": "Requisições na ordem do fluxo de atendimento. Antes de executar, preencha a variável senhaGerente com o valor de ADMIN_PASSWORD. Execute em sequência (Collection Runner): o gerente cadastra um atendente e um técnico, e cada etapa da OS é feita pelo perfil responsável, com o token JWT guardado nas variáveis da coleção.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{tokenGerente}}",
+        "type": "string"
+      }
+    ]
   },
   "variable": [
     {
       "key": "baseUrl",
       "value": "http://localhost:8080"
+    },
+    {
+      "key": "loginGerente",
+      "value": "gerente"
+    },
+    {
+      "key": "senhaGerente",
+      "value": "defina-com-o-valor-de-ADMIN_PASSWORD"
+    },
+    {
+      "key": "senhaEquipe",
+      "value": "senha-da-equipe-123"
+    },
+    {
+      "key": "loginAtendente",
+      "value": ""
+    },
+    {
+      "key": "loginTecnico",
+      "value": ""
+    },
+    {
+      "key": "tokenGerente",
+      "value": ""
+    },
+    {
+      "key": "tokenAtendente",
+      "value": ""
+    },
+    {
+      "key": "tokenTecnico",
+      "value": ""
     },
     {
       "key": "clienteId",
@@ -32,17 +74,278 @@
       "script": {
         "type": "text/javascript",
         "exec": [
-          "if (!pm.collectionVariables.get('sufixo')) { pm.collectionVariables.set('sufixo', Date.now()); }"
+          "if (!pm.collectionVariables.get('sufixo')) { pm.collectionVariables.set('sufixo', Date.now()); }",
+          "const s = pm.collectionVariables.get('sufixo');",
+          "pm.collectionVariables.set('loginAtendente', 'atendente.' + s);",
+          "pm.collectionVariables.set('loginTecnico', 'tecnico.' + s);"
         ]
       }
     }
   ],
   "item": [
     {
+      "name": "0. Autenticação e equipe",
+      "item": [
+        {
+          "name": "Login do gerente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{loginGerente}}\",\n  \"senha\": \"{{senhaGerente}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('tokenGerente', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cadastrar usuário atendente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Carla Souza\",\n  \"login\": \"{{loginAtendente}}\",\n  \"senha\": \"{{senhaEquipe}}\",\n  \"perfil\": \"ATENDENTE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cadastrar usuário técnico",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"João Pereira\",\n  \"login\": \"{{loginTecnico}}\",\n  \"senha\": \"{{senhaEquipe}}\",\n  \"perfil\": \"TECNICO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar usuários",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login do atendente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{loginAtendente}}\",\n  \"senha\": \"{{senhaEquipe}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('tokenAtendente', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login do técnico",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{loginTecnico}}\",\n  \"senha\": \"{{senhaEquipe}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('tokenTecnico', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "1. Cadastros",
       "item": [
         {
-          "name": "Cadastrar cliente",
+          "name": "Cadastrar cliente (atendente)",
           "request": {
             "method": "POST",
             "header": [
@@ -59,6 +362,16 @@
               "path": [
                 "api",
                 "clientes"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAtendente}}",
+                  "type": "string"
+                }
               ]
             },
             "body": {
@@ -116,6 +429,16 @@
                   "value": "nome,asc"
                 }
               ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAtendente}}",
+                  "type": "string"
+                }
+              ]
             }
           },
           "event": [
@@ -145,6 +468,16 @@
                 "clientes",
                 "{{clienteId}}"
               ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAtendente}}",
+                  "type": "string"
+                }
+              ]
             }
           },
           "event": [
@@ -160,7 +493,7 @@
           ]
         },
         {
-          "name": "Atualizar cliente",
+          "name": "Atualizar cliente (atendente)",
           "request": {
             "method": "PUT",
             "header": [
@@ -178,6 +511,16 @@
                 "api",
                 "clientes",
                 "{{clienteId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAtendente}}",
+                  "type": "string"
+                }
               ]
             },
             "body": {
@@ -203,7 +546,7 @@
           ]
         },
         {
-          "name": "Cadastrar equipamento",
+          "name": "Cadastrar equipamento (atendente)",
           "request": {
             "method": "POST",
             "header": [
@@ -220,6 +563,16 @@
               "path": [
                 "api",
                 "equipamentos"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAtendente}}",
+                  "type": "string"
+                }
               ]
             },
             "body": {
@@ -260,6 +613,16 @@
                 "equipamentos",
                 "{{equipamentoId}}"
               ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAtendente}}",
+                  "type": "string"
+                }
+              ]
             }
           },
           "event": [
@@ -275,7 +638,7 @@
           ]
         },
         {
-          "name": "Atualizar equipamento",
+          "name": "Atualizar equipamento (atendente)",
           "request": {
             "method": "PUT",
             "header": [
@@ -293,6 +656,16 @@
                 "api",
                 "equipamentos",
                 "{{equipamentoId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAtendente}}",
+                  "type": "string"
+                }
               ]
             },
             "body": {
@@ -333,6 +706,16 @@
                 "{{clienteId}}",
                 "equipamentos"
               ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAtendente}}",
+                  "type": "string"
+                }
+              ]
             }
           },
           "event": [
@@ -348,7 +731,7 @@
           ]
         },
         {
-          "name": "Cadastrar técnico",
+          "name": "Cadastrar técnico (gerente)",
           "request": {
             "method": "POST",
             "header": [
@@ -454,7 +837,7 @@
           ]
         },
         {
-          "name": "Atualizar técnico",
+          "name": "Atualizar técnico (gerente)",
           "request": {
             "method": "PUT",
             "header": [
@@ -502,7 +885,7 @@
       "name": "2. Atendimento da OS",
       "item": [
         {
-          "name": "Abrir OS",
+          "name": "Abrir OS (atendente)",
           "request": {
             "method": "POST",
             "header": [
@@ -519,6 +902,16 @@
               "path": [
                 "api",
                 "ordens-servico"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAtendente}}",
+                  "type": "string"
+                }
               ]
             },
             "body": {
@@ -545,7 +938,7 @@
           ]
         },
         {
-          "name": "Registrar laudo e orçamento",
+          "name": "Registrar laudo e orçamento (técnico)",
           "request": {
             "method": "PUT",
             "header": [
@@ -563,6 +956,16 @@
                 "api",
                 "ordens-servico",
                 "{{ordemServicoId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTecnico}}",
+                  "type": "string"
+                }
               ]
             },
             "body": {
@@ -588,7 +991,7 @@
           ]
         },
         {
-          "name": "Aprovar orçamento",
+          "name": "Aprovar orçamento (atendente)",
           "request": {
             "method": "PATCH",
             "header": [
@@ -607,6 +1010,16 @@
                 "ordens-servico",
                 "{{ordemServicoId}}",
                 "status"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAtendente}}",
+                  "type": "string"
+                }
               ]
             },
             "body": {
@@ -632,7 +1045,7 @@
           ]
         },
         {
-          "name": "Atribuir técnico",
+          "name": "Atribuir técnico (gerente)",
           "request": {
             "method": "PATCH",
             "header": [
@@ -676,7 +1089,7 @@
           ]
         },
         {
-          "name": "Iniciar reparo",
+          "name": "Iniciar reparo (técnico)",
           "request": {
             "method": "PATCH",
             "header": [
@@ -695,6 +1108,16 @@
                 "ordens-servico",
                 "{{ordemServicoId}}",
                 "status"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTecnico}}",
+                  "type": "string"
+                }
               ]
             },
             "body": {
@@ -720,7 +1143,7 @@
           ]
         },
         {
-          "name": "Registrar serviços executados",
+          "name": "Registrar serviços executados (técnico)",
           "request": {
             "method": "PUT",
             "header": [
@@ -738,6 +1161,16 @@
                 "api",
                 "ordens-servico",
                 "{{ordemServicoId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTecnico}}",
+                  "type": "string"
+                }
               ]
             },
             "body": {
@@ -763,7 +1196,7 @@
           ]
         },
         {
-          "name": "Concluir OS",
+          "name": "Concluir OS (técnico)",
           "request": {
             "method": "PATCH",
             "header": [
@@ -782,6 +1215,16 @@
                 "ordens-servico",
                 "{{ordemServicoId}}",
                 "status"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTecnico}}",
+                  "type": "string"
+                }
               ]
             },
             "body": {
@@ -807,7 +1250,7 @@
           ]
         },
         {
-          "name": "Entregar ao cliente",
+          "name": "Entregar ao cliente (atendente)",
           "request": {
             "method": "PATCH",
             "header": [
@@ -826,6 +1269,16 @@
                 "ordens-servico",
                 "{{ordemServicoId}}",
                 "status"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAtendente}}",
+                  "type": "string"
+                }
               ]
             },
             "body": {
@@ -870,6 +1323,16 @@
                 "ordens-servico",
                 "{{ordemServicoId}}"
               ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAtendente}}",
+                  "type": "string"
+                }
+              ]
             }
           },
           "event": [
@@ -900,6 +1363,16 @@
                 "{{ordemServicoId}}",
                 "historico"
               ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAtendente}}",
+                  "type": "string"
+                }
+              ]
             }
           },
           "event": [
@@ -915,7 +1388,7 @@
           ]
         },
         {
-          "name": "Listar OS com filtros",
+          "name": "Listar OS com filtros (gerente)",
           "request": {
             "method": "GET",
             "header": [],
@@ -967,7 +1440,7 @@
       ]
     },
     {
-      "name": "4. Regras de negócio e erros",
+      "name": "4. Regras de negócio, erros e segurança",
       "item": [
         {
           "name": "Transição inválida após entrega (422)",
@@ -989,6 +1462,16 @@
                 "ordens-servico",
                 "{{ordemServicoId}}",
                 "status"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAtendente}}",
+                  "type": "string"
+                }
               ]
             },
             "body": {
@@ -1033,6 +1516,16 @@
                 "clientes"
               ]
             },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAtendente}}",
+                  "type": "string"
+                }
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"nome\": \"\",\n  \"email\": \"invalido\"\n}",
@@ -1073,6 +1566,16 @@
               "path": [
                 "api",
                 "clientes"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAtendente}}",
+                  "type": "string"
+                }
               ]
             },
             "body": {
@@ -1141,6 +1644,16 @@
                 "equipamentos",
                 "{{equipamentoId}}"
               ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAtendente}}",
+                  "type": "string"
+                }
+              ]
             }
           },
           "event": [
@@ -1170,6 +1683,16 @@
                 "clientes",
                 "{{clienteId}}"
               ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAtendente}}",
+                  "type": "string"
+                }
+              ]
             }
           },
           "event": [
@@ -1185,7 +1708,188 @@
           ]
         },
         {
-          "name": "Desativar técnico",
+          "name": "Requisição sem token (401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/clientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clientes"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login com senha errada (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{loginGerente}}\",\n  \"senha\": \"senha-errada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Atendente cadastrando técnico (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tecnicos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tecnicos"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAtendente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Sem permissão\",\n  \"email\": \"negado.{{sufixo}}@assistencia.com\",\n  \"especialidade\": \"hardware\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Técnico cadastrando cliente (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/clientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clientes"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTecnico}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Sem permissão\",\n  \"telefone\": \"1\",\n  \"email\": \"negado.{{sufixo}}@email.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Desativar técnico (gerente)",
           "request": {
             "method": "DELETE",
             "header": [],

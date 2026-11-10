@@ -6,11 +6,14 @@ para a disciplina de JEE do IFSertão-PE – Campus Salgueiro. A especificação
 
 A API controla o ciclo de vida das OS, da entrada do equipamento até a entrega ao cliente: cadastro de clientes,
 equipamentos e técnicos; abertura da OS; laudo e orçamento; atribuição de técnico; mudanças de status com
-transições validadas e histórico de cada mudança.
+transições validadas e histórico de cada mudança. O acesso é protegido com Spring Security e token JWT, com perfis
+de atendente, técnico e gerente. A visão do produto está em
+[docs/Documento_de_Visao_API_Pedidos.docx](docs/Documento_de_Visao_API_Pedidos.docx).
 
 ## Tecnologias
 
-- Java 17 e Spring Boot 3.5 (Web, Data JPA, Validation)
+- Java 17 e Spring Boot 3.5 (Web, Data JPA, Validation, Security, OAuth2 Resource Server)
+- JWT assinado com HS256 e senhas com BCrypt
 - Hibernate e PostgreSQL 16
 - springdoc-openapi (Swagger UI)
 - JUnit 5, Mockito, MockMvc e H2 nos testes
@@ -27,8 +30,16 @@ transições validadas e histórico de cada mudança.
 
 ### 1. Configurar as variáveis de ambiente
 
-As credenciais do banco são lidas das variáveis `DB_URL`, `DB_USER` e `DB_PASSWORD` e nunca ficam no código.
-Copie o arquivo de exemplo e defina uma senha:
+Credenciais e segredos são lidos de variáveis de ambiente e nunca ficam no código:
+
+| Variável | Uso |
+|----------|-----|
+| `DB_URL`, `DB_USER`, `DB_PASSWORD` | Conexão com o PostgreSQL |
+| `JWT_SECRET` | Segredo de assinatura dos tokens; obrigatório, com pelo menos 32 caracteres |
+| `JWT_EXPIRACAO` | Validade do token (padrão `8h`) |
+| `ADMIN_LOGIN`, `ADMIN_PASSWORD` | Gerente criado na primeira execução, quando ainda não há usuários |
+
+Copie o arquivo de exemplo e troque os valores:
 
 ```bash
 cp .env.example .env
@@ -64,15 +75,42 @@ docker compose up -d --wait
 ```
 
 A API fica disponível em `http://localhost:8080`. As tabelas são criadas automaticamente pelo Hibernate na primeira
-execução. O fuso horário padrão é `America/Recife`.
+execução, junto com o usuário gerente definido em `ADMIN_LOGIN`/`ADMIN_PASSWORD`. O fuso horário padrão é
+`America/Recife`.
 
 ### 4. Documentação e testes manuais
 
 - Swagger UI: <http://localhost:8080/swagger-ui.html>
 - Especificação OpenAPI: <http://localhost:8080/v3/api-docs>
 - Coleção do Postman: [docs/API_Pedidos_Assistencia_Tecnica.postman_collection.json](docs/API_Pedidos_Assistencia_Tecnica.postman_collection.json).
-  Importe no Postman e execute em sequência (Collection Runner); as requisições seguem o fluxo de atendimento e os ids
-  criados são guardados nas variáveis da coleção.
+  Importe no Postman, preencha a variável `senhaGerente` com o valor de `ADMIN_PASSWORD` e execute em sequência
+  (Collection Runner). O gerente cadastra um atendente e um técnico, cada etapa da OS é feita pelo perfil responsável e
+  os tokens e ids são guardados nas variáveis da coleção.
+
+## Autenticação e perfis
+
+Faça login e envie o token no cabeçalho `Authorization` das demais requisições:
+
+```http
+POST /api/auth/login
+{ "login": "gerente", "senha": "..." }
+
+GET /api/ordens-servico
+Authorization: Bearer <token>
+```
+
+No Swagger, use o botão **Authorize** com o token. A API não guarda sessão: cada requisição é validada pelo token.
+
+| Operação | Atendente | Técnico | Gerente |
+|----------|:---------:|:-------:|:-------:|
+| Consultas (`GET`) | ✔ | ✔ | ✔ |
+| Cadastrar, atualizar e remover clientes e equipamentos | ✔ | | ✔ |
+| Cadastrar, atualizar e desativar técnicos | | | ✔ |
+| Abrir OS | ✔ | | ✔ |
+| Registrar laudo, serviços e valor (`PUT` da OS) | | ✔ | ✔ |
+| Atribuir técnico à OS | | | ✔ |
+| Alterar status da OS | ✔ | ✔ | ✔ |
+| Gerenciar usuários (`/api/usuarios`) | | | ✔ |
 
 ### Testes automatizados
 
@@ -81,8 +119,9 @@ execução. O fuso horário padrão é `America/Recife`.
 ```
 
 Executa os testes unitários (JUnit 5 e Mockito) dos services e do enum de transições de status, cobrindo as regras
-RN-01 a RN-10, e o teste de integração com H2 em memória e MockMvc, que percorre o fluxo cliente → equipamento → OS até `ENTREGUE` e
-verifica uma transição inválida retornando 422. Os testes não precisam do PostgreSQL nem das variáveis de ambiente.
+RN-01 a RN-10, do login JWT e do Singleton, e os testes de integração com H2 em memória e MockMvc, que percorrem o
+fluxo cliente → equipamento → OS até `ENTREGUE`, verificam uma transição inválida retornando 422 e as respostas 401 e
+403 por perfil. Os testes não precisam do PostgreSQL nem das variáveis de ambiente.
 
 ## Endpoints
 
@@ -90,6 +129,9 @@ Todas as listagens são paginadas com os parâmetros `page`, `size` (padrão 20)
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
+| POST | `/api/auth/login` | Autentica e devolve o token JWT (público) |
+| POST | `/api/usuarios` | Cadastra usuário da equipe (gerente) |
+| GET | `/api/usuarios` | Lista usuários (gerente) |
 | POST | `/api/clientes` | Cadastra cliente |
 | GET | `/api/clientes?nome=` | Lista clientes (filtro opcional por nome parcial) |
 | GET | `/api/clientes/{id}` | Consulta cliente |
@@ -155,6 +197,15 @@ validadas na camada de serviço:
 
 Ao entrar em `CONCLUIDO` e `ENTREGUE`, as datas de conclusão e de entrega são preenchidas automaticamente.
 
+## Padrões de projeto
+
+| Padrão | Onde |
+|--------|------|
+| State | `StatusOrdemServico`: cada status define as transições permitidas e o efeito ao entrar nele |
+| Singleton | `RelogioAssistencia`: instância única (holder idiom, thread-safe) que fornece data e hora no fuso `America/Recife` |
+| Repository | Interfaces `JpaRepository` do Spring Data |
+| DTO | Records de requisição e resposta, separados das entidades JPA |
+
 ## Formato de erro
 
 Toda falha devolve o mesmo formato; `campos` aparece apenas em erros de validação.
@@ -172,6 +223,8 @@ Toda falha devolve o mesmo formato; `campos` aparece apenas em erros de validaç
 | Código | Situação |
 |--------|----------|
 | 400 | Dados inválidos (Bean Validation, JSON mal formatado, parâmetro inválido, método ou tipo de conteúdo não suportado) |
+| 401 | Token ausente, inválido ou expirado, ou login e senha incorretos |
+| 403 | Perfil sem permissão para a operação |
 | 404 | Recurso não encontrado |
 | 409 | Duplicidade ou registro com dependentes |
 | 422 | Regra de negócio violada |
@@ -190,7 +243,7 @@ src/main/java/br/edu/ifsertaope/assistencia/
 ├── dto/          records de requisição e resposta
 ├── mapper/       conversão entre entidades e DTOs
 ├── exception/    exceções e handler global de erros
-└── config/       Clock (America/Recife) e OpenAPI
+└── config/       segurança (JWT e perfis), Singleton RelogioAssistencia e OpenAPI
 ```
 
 ## Autores
