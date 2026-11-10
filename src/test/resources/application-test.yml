@@ -7,3 +7,12 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
+
+seguranca:
+  jwt:
+    segredo: segredo-exclusivo-dos-testes-com-mais-de-32-bytes
+    expiracao: 1h
+  administrador:
+    nome: Gerente de Testes
+    login: gerente
+    senha: senha-do-gerente

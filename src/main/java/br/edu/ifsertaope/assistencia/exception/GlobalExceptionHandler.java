@@ -15,6 +15,8 @@ import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -117,6 +119,22 @@ public class GlobalExceptionHandler {
         return responder(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage(), request, null);
     }
 
+    @ExceptionHandler(CredenciaisInvalidasException.class)
+    public ResponseEntity<ErroResponse> credenciaisInvalidas(CredenciaisInvalidasException ex,
+            HttpServletRequest request) {
+        return responder(HttpStatus.UNAUTHORIZED, ex.getMessage(), request, null);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErroResponse> naoAutenticado(AuthenticationException ex, HttpServletRequest request) {
+        return responder(HttpStatus.UNAUTHORIZED, RespostaErroSeguranca.MENSAGEM_NAO_AUTENTICADO, request, null);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErroResponse> acessoNegado(AccessDeniedException ex, HttpServletRequest request) {
+        return responder(HttpStatus.FORBIDDEN, RespostaErroSeguranca.MENSAGEM_ACESSO_NEGADO, request, null);
+    }
+
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErroResponse> metodoNaoSuportado(HttpRequestMethodNotSupportedException ex,
             HttpServletRequest request) {
@@ -140,24 +158,9 @@ public class GlobalExceptionHandler {
 
     private ResponseEntity<ErroResponse> responder(HttpStatus status, String mensagem, HttpServletRequest request,
             List<CampoInvalido> campos) {
-        ErroResponse corpo = new ErroResponse(
-                LocalDateTime.now(clock),
-                status.value(),
-                descrever(status),
-                mensagem,
-                request.getRequestURI(),
-                campos);
+        ErroResponse corpo = ErroResponse.de(status, mensagem, request.getRequestURI(), campos,
+                LocalDateTime.now(clock));
         return ResponseEntity.status(status).body(corpo);
-    }
-
-    private static String descrever(HttpStatus status) {
-        return switch (status) {
-            case BAD_REQUEST -> "Requisição inválida";
-            case NOT_FOUND -> "Recurso não encontrado";
-            case CONFLICT -> "Conflito";
-            case UNPROCESSABLE_ENTITY -> "Regra de negócio violada";
-            default -> "Erro interno";
-        };
     }
 
     private static String valoresAceitos(Class<?> tipo) {
