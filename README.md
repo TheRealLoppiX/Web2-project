@@ -19,20 +19,47 @@ de atendente, técnico e gerente. A visão do produto está em
 - Hibernate e PostgreSQL 16
 - springdoc-openapi (Swagger UI)
 - JUnit 5, Mockito, MockMvc e H2 nos testes
-- Maven (via Maven Wrapper) e Docker Compose
+- Docker e Docker Compose para compilar, testar e executar
 
 ## Pré-requisitos
 
-- JDK 17 ou superior (`java -version`)
-- Docker e Docker Compose, para subir o PostgreSQL sem instalá-lo
-  (ou um PostgreSQL 16 local com um banco chamado `assistencia`)
-- Não é preciso instalar o Maven: use `./mvnw` (Linux/macOS/Git Bash) ou `mvnw.cmd` (Windows)
+- Docker Desktop (Windows/macOS) ou Docker Engine com o plugin Compose (Linux)
+
+Não é preciso instalar Java, Maven nem PostgreSQL: a compilação, os testes e a execução acontecem dentro dos
+contêineres.
 
 ## Como rodar
 
-### 1. Configurar as variáveis de ambiente
+```bash
+cp .env.example .env
+```
 
-Credenciais e segredos são lidos de variáveis de ambiente e nunca ficam no código:
+```bash
+docker compose up -d --build
+```
+
+Pronto: o primeiro comando cria o arquivo de configuração e o segundo sobe o PostgreSQL e a API. Na primeira vez, a
+imagem da API é construída: o Docker baixa as dependências, compila o projeto e executa os 90 testes automatizados
+(alguns minutos). Se algum teste falhar, a imagem não é criada. Nas próximas vezes, `docker compose up -d` sobe tudo em
+segundos.
+
+A API fica disponível em `http://localhost:8080` assim que o log mostrar `Started Application`:
+
+```bash
+docker compose logs -f api
+```
+
+Para parar, use `docker compose down` (os dados continuam no volume `postgres-data`); para apagar também os dados, use
+`docker compose down -v`.
+
+As tabelas são criadas automaticamente pelo Hibernate na primeira execução, junto com o usuário gerente definido em
+`ADMIN_LOGIN`/`ADMIN_PASSWORD` (com o `.env.example`, login `gerente` e senha `troque-esta-senha-do-gerente`). O fuso
+horário padrão é `America/Recife`.
+
+### Variáveis de ambiente
+
+Credenciais e segredos são lidos de variáveis de ambiente e nunca ficam no código. O Docker Compose lê o arquivo `.env`,
+que está no `.gitignore`; troque os valores de exemplo antes de usar fora da sala de aula:
 
 | Variável | Uso |
 |----------|-----|
@@ -41,46 +68,10 @@ Credenciais e segredos são lidos de variáveis de ambiente e nunca ficam no có
 | `JWT_EXPIRACAO` | Validade do token (padrão `8h`) |
 | `ADMIN_LOGIN`, `ADMIN_PASSWORD` | Gerente criado na primeira execução, quando ainda não há usuários |
 
-Copie o arquivo de exemplo e troque os valores:
+Dentro do Docker Compose, a API se conecta ao banco pelo nome do serviço (`postgres`), então `DB_URL` do `.env` não é
+usada por ela.
 
-```bash
-cp .env.example .env
-```
-
-O arquivo `.env` está no `.gitignore`. O Docker Compose lê esse arquivo automaticamente; para a aplicação, exporte as
-variáveis no terminal.
-
-Linux, macOS ou Git Bash:
-
-```bash
-set -a; . ./.env; set +a
-```
-
-Windows (PowerShell):
-
-```powershell
-Get-Content .env | ForEach-Object { $k, $v = $_ -split '=', 2; if ($k) { Set-Item "env:$k" $v } }
-```
-
-Se `DB_URL` não for definida, a aplicação usa `jdbc:postgresql://localhost:5432/assistencia`.
-
-### 2. Subir o banco de dados
-
-```bash
-docker compose up -d --wait
-```
-
-### 3. Executar a aplicação
-
-```bash
-./mvnw spring-boot:run
-```
-
-A API fica disponível em `http://localhost:8080`. As tabelas são criadas automaticamente pelo Hibernate na primeira
-execução, junto com o usuário gerente definido em `ADMIN_LOGIN`/`ADMIN_PASSWORD`. O fuso horário padrão é
-`America/Recife`.
-
-### 4. Documentação e testes manuais
+### Documentação e testes manuais
 
 - Swagger UI: <http://localhost:8080/swagger-ui.html>
 - Especificação OpenAPI: <http://localhost:8080/v3/api-docs>
@@ -116,11 +107,14 @@ No Swagger, use o botão **Authorize** com o token. A API não guarda sessão: c
 
 ### Testes automatizados
 
+Os testes rodam automaticamente na construção da imagem (`docker compose up -d --build`). Para executá-los de novo e
+ver o resultado completo:
+
 ```bash
-./mvnw verify
+docker compose build --no-cache --progress=plain api
 ```
 
-Executa os testes unitários (JUnit 5 e Mockito) dos services e do enum de transições de status, cobrindo as regras
+São os testes unitários (JUnit 5 e Mockito) dos services e do enum de transições de status, cobrindo as regras
 RN-01 a RN-10, do login JWT e do Singleton, e os testes de integração com H2 em memória e MockMvc, que percorrem o
 fluxo cliente → equipamento → OS até `ENTREGUE`, verificam uma transição inválida retornando 422 e as respostas 401 e
 403 por perfil. Os testes não precisam do PostgreSQL nem das variáveis de ambiente.
