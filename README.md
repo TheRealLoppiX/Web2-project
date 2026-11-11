@@ -75,6 +75,9 @@ usada por ela.
 
 - Swagger UI: <http://localhost:8080/swagger-ui.html>
 - Especificação OpenAPI: <http://localhost:8080/v3/api-docs>
+- Cópia estática da documentação, que abre sem a API rodando:
+  [docs/documentacao-api.html](docs/documentacao-api.html) (Swagger UI no navegador) e
+  [docs/openapi.json](docs/openapi.json) (especificação OpenAPI 3.1)
 - Coleção do Postman: [docs/API_Pedidos_Assistencia_Tecnica.postman_collection.json](docs/API_Pedidos_Assistencia_Tecnica.postman_collection.json).
   Importe no Postman, preencha a variável `senhaGerente` com o valor de `ADMIN_PASSWORD` e execute em sequência
   (Collection Runner). O gerente cadastra um atendente e um técnico, cada etapa da OS é feita pelo perfil responsável e

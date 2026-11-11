@@ -1,0 +1,1768 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "API de Pedidos - Assistência Técnica",
+    "description": "API REST para gerenciamento de clientes, equipamentos, técnicos e ordens de serviço de uma assistência técnica de informática. Faça login em POST /api/auth/login e use o token no botão Authorize.",
+    "contact": {
+      "name": "Arthur Vasconcelos de Oliveira e Bruno Alencar - IFSertão-PE"
+    },
+    "version": "1.1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Generated server url"
+    }
+  ],
+  "security": [
+    {
+      "bearer-jwt": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Autenticação",
+      "description": "Login e emissão do token JWT"
+    },
+    {
+      "name": "Técnicos",
+      "description": "Equipe técnica da assistência"
+    },
+    {
+      "name": "Usuários",
+      "description": "Contas de acesso da equipe (somente gerente)"
+    },
+    {
+      "name": "Equipamentos",
+      "description": "Equipamentos trazidos pelos clientes"
+    },
+    {
+      "name": "Ordens de serviço",
+      "description": "Abertura, acompanhamento e encerramento de OS"
+    },
+    {
+      "name": "Clientes",
+      "description": "Cadastro de clientes da assistência"
+    }
+  ],
+  "paths": {
+    "/api/tecnicos/{id}": {
+      "get": {
+        "tags": [
+          "Técnicos"
+        ],
+        "summary": "Consulta técnico por id",
+        "operationId": "buscar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TecnicoResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Técnicos"
+        ],
+        "summary": "Atualiza técnico",
+        "operationId": "atualizar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TecnicoAtualizacaoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TecnicoResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Técnicos"
+        ],
+        "summary": "Desativa técnico (exclusão lógica)",
+        "operationId": "desativar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/ordens-servico/{id}": {
+      "get": {
+        "tags": [
+          "Ordens de serviço"
+        ],
+        "summary": "Consulta OS por id",
+        "operationId": "buscar_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdemServicoResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Ordens de serviço"
+        ],
+        "summary": "Registra laudo técnico, serviços executados e valor total",
+        "operationId": "atualizar_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrdemServicoAtualizacaoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdemServicoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/equipamentos/{id}": {
+      "get": {
+        "tags": [
+          "Equipamentos"
+        ],
+        "summary": "Consulta equipamento por id",
+        "operationId": "buscar_2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipamentoResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Equipamentos"
+        ],
+        "summary": "Atualiza equipamento",
+        "operationId": "atualizar_2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EquipamentoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipamentoResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Equipamentos"
+        ],
+        "summary": "Remove equipamento sem ordens de serviço",
+        "operationId": "remover",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/clientes/{id}": {
+      "get": {
+        "tags": [
+          "Clientes"
+        ],
+        "summary": "Consulta cliente por id",
+        "operationId": "buscar_3",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClienteResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Clientes"
+        ],
+        "summary": "Atualiza cliente",
+        "operationId": "atualizar_3",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClienteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClienteResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Clientes"
+        ],
+        "summary": "Remove cliente sem equipamentos cadastrados",
+        "operationId": "remover_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/usuarios": {
+      "get": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Lista usuários com paginação",
+        "operationId": "listar",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Zero-based page index (0..N)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "minimum": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "default": [
+                "id,ASC"
+              ],
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginaResponseUsuarioResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Cadastra usuário com perfil ATENDENTE, TECNICO ou GERENTE",
+        "operationId": "criar",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tecnicos": {
+      "get": {
+        "tags": [
+          "Técnicos"
+        ],
+        "summary": "Lista técnicos com paginação e filtro opcional por ativos",
+        "operationId": "listar_1",
+        "parameters": [
+          {
+            "name": "ativos",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Zero-based page index (0..N)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "minimum": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "default": [
+                "id,ASC"
+              ],
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginaResponseTecnicoResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Técnicos"
+        ],
+        "summary": "Cadastra técnico como ativo",
+        "operationId": "criar_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TecnicoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TecnicoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ordens-servico": {
+      "get": {
+        "tags": [
+          "Ordens de serviço"
+        ],
+        "summary": "Lista OS com paginação e filtros por status, cliente e técnico",
+        "operationId": "listar_2",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "AGUARDANDO_ANALISE",
+                "ORCAMENTO_APROVADO",
+                "EM_REPARO",
+                "CONCLUIDO",
+                "ENTREGUE",
+                "CANCELADO"
+              ]
+            }
+          },
+          {
+            "name": "clienteId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "tecnicoId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Zero-based page index (0..N)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "minimum": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "default": [
+                "id,ASC"
+              ],
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginaResponseOrdemServicoResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Ordens de serviço"
+        ],
+        "summary": "Abre OS em AGUARDANDO_ANALISE",
+        "operationId": "abrir",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrdemServicoAberturaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdemServicoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/equipamentos": {
+      "post": {
+        "tags": [
+          "Equipamentos"
+        ],
+        "summary": "Cadastra equipamento vinculado a um cliente",
+        "operationId": "criar_2",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EquipamentoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipamentoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clientes": {
+      "get": {
+        "tags": [
+          "Clientes"
+        ],
+        "summary": "Lista clientes com paginação e filtro por nome parcial",
+        "operationId": "listar_3",
+        "parameters": [
+          {
+            "name": "nome",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Zero-based page index (0..N)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "minimum": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "default": [
+                "id,ASC"
+              ],
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginaResponseClienteResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Clientes"
+        ],
+        "summary": "Cadastra cliente",
+        "operationId": "criar_3",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClienteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClienteResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Autentica o usuário e devolve o token JWT",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/ordens-servico/{id}/tecnico": {
+      "patch": {
+        "tags": [
+          "Ordens de serviço"
+        ],
+        "summary": "Atribui ou troca o técnico responsável",
+        "operationId": "atribuirTecnico",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtribuicaoTecnicoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdemServicoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ordens-servico/{id}/status": {
+      "patch": {
+        "tags": [
+          "Ordens de serviço"
+        ],
+        "summary": "Altera o status respeitando as transições válidas",
+        "operationId": "alterarStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlteracaoStatusRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdemServicoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ordens-servico/{id}/historico": {
+      "get": {
+        "tags": [
+          "Ordens de serviço"
+        ],
+        "summary": "Consulta o histórico de status em ordem cronológica",
+        "operationId": "historico",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HistoricoStatusResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clientes/{id}/equipamentos": {
+      "get": {
+        "tags": [
+          "Clientes"
+        ],
+        "summary": "Lista os equipamentos do cliente",
+        "operationId": "listarEquipamentos",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Zero-based page index (0..N)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "minimum": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page to be returned",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "default": [
+                "id,ASC"
+              ],
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginaResponseEquipamentoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TecnicoAtualizacaoRequest": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "João Pereira",
+            "maxLength": 120,
+            "minLength": 0
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "joao@assistencia.com",
+            "maxLength": 120,
+            "minLength": 0
+          },
+          "especialidade": {
+            "type": "string",
+            "example": "hardware",
+            "maxLength": 80,
+            "minLength": 0
+          },
+          "ativo": {
+            "type": "boolean",
+            "description": "Quando informado, reativa ou desativa o técnico",
+            "example": true
+          }
+        },
+        "required": [
+          "email",
+          "especialidade",
+          "nome"
+        ]
+      },
+      "TecnicoResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "especialidade": {
+            "type": "string"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        }
+      },
+      "OrdemServicoAtualizacaoRequest": {
+        "type": "object",
+        "description": "Campos não informados (nulos) mantêm o valor atual da OS",
+        "properties": {
+          "laudoTecnico": {
+            "type": "string",
+            "example": "Cooler obstruído e pasta térmica ressecada.",
+            "maxLength": 2000,
+            "minLength": 0
+          },
+          "descricaoServicos": {
+            "type": "string",
+            "example": "Limpeza interna e troca de pasta térmica.",
+            "maxLength": 2000,
+            "minLength": 0
+          },
+          "valorTotal": {
+            "type": "number",
+            "example": 150.0,
+            "minimum": 0.0
+          }
+        }
+      },
+      "OrdemServicoResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "AGUARDANDO_ANALISE",
+              "ORCAMENTO_APROVADO",
+              "EM_REPARO",
+              "CONCLUIDO",
+              "ENTREGUE",
+              "CANCELADO"
+            ]
+          },
+          "equipamentoId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "equipamentoDescricao": {
+            "type": "string"
+          },
+          "clienteId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "clienteNome": {
+            "type": "string"
+          },
+          "tecnicoId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "tecnicoNome": {
+            "type": "string"
+          },
+          "descricaoDefeito": {
+            "type": "string"
+          },
+          "laudoTecnico": {
+            "type": "string"
+          },
+          "descricaoServicos": {
+            "type": "string"
+          },
+          "valorTotal": {
+            "type": "number"
+          },
+          "dataAbertura": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dataConclusao": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dataEntrega": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "EquipamentoRequest": {
+        "type": "object",
+        "properties": {
+          "clienteId": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "NOTEBOOK",
+              "DESKTOP",
+              "IMPRESSORA",
+              "MONITOR",
+              "OUTRO"
+            ],
+            "example": "NOTEBOOK"
+          },
+          "marca": {
+            "type": "string",
+            "example": "Dell",
+            "maxLength": 60,
+            "minLength": 0
+          },
+          "modelo": {
+            "type": "string",
+            "example": "Inspiron 15 3520",
+            "maxLength": 80,
+            "minLength": 0
+          },
+          "numeroSerie": {
+            "type": "string",
+            "example": "BR-5CD1234XYZ",
+            "maxLength": 80,
+            "minLength": 0
+          },
+          "especificacoes": {
+            "type": "string",
+            "example": "Core i5, 8 GB RAM, SSD 256 GB; entregue com carregador",
+            "maxLength": 500,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "clienteId",
+          "marca",
+          "modelo",
+          "tipo"
+        ]
+      },
+      "EquipamentoResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "clienteId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "clienteNome": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "NOTEBOOK",
+              "DESKTOP",
+              "IMPRESSORA",
+              "MONITOR",
+              "OUTRO"
+            ]
+          },
+          "marca": {
+            "type": "string"
+          },
+          "modelo": {
+            "type": "string"
+          },
+          "numeroSerie": {
+            "type": "string"
+          },
+          "especificacoes": {
+            "type": "string"
+          }
+        }
+      },
+      "ClienteRequest": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Maria da Silva",
+            "maxLength": 120,
+            "minLength": 0
+          },
+          "telefone": {
+            "type": "string",
+            "example": "(87) 99999-0000",
+            "maxLength": 20,
+            "minLength": 0
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "maria@email.com",
+            "maxLength": 120,
+            "minLength": 0
+          },
+          "cpfCnpj": {
+            "type": "string",
+            "description": "CPF ou CNPJ, com ou sem formatação; opcional",
+            "example": "123.456.789-09",
+            "pattern": "^(\\d{11}|\\d{14}|\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}|\\d{2}\\.\\d{3}\\.\\d{3}/\\d{4}-\\d{2})?$"
+          }
+        },
+        "required": [
+          "email",
+          "nome",
+          "telefone"
+        ]
+      },
+      "ClienteResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "telefone": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "cpfCnpj": {
+            "type": "string"
+          },
+          "dataCadastro": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UsuarioRequest": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Carla Souza",
+            "maxLength": 120,
+            "minLength": 0
+          },
+          "login": {
+            "type": "string",
+            "example": "carla.atendimento",
+            "maxLength": 60,
+            "minLength": 3,
+            "pattern": "^[A-Za-z0-9._@-]*$"
+          },
+          "senha": {
+            "type": "string",
+            "example": "senhaForte123",
+            "maxLength": 72,
+            "minLength": 8
+          },
+          "perfil": {
+            "type": "string",
+            "enum": [
+              "ATENDENTE",
+              "TECNICO",
+              "GERENTE"
+            ],
+            "example": "ATENDENTE"
+          }
+        },
+        "required": [
+          "login",
+          "nome",
+          "perfil",
+          "senha"
+        ]
+      },
+      "UsuarioResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "login": {
+            "type": "string"
+          },
+          "perfil": {
+            "type": "string",
+            "enum": [
+              "ATENDENTE",
+              "TECNICO",
+              "GERENTE"
+            ]
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        }
+      },
+      "TecnicoRequest": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "João Pereira",
+            "maxLength": 120,
+            "minLength": 0
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "joao@assistencia.com",
+            "maxLength": 120,
+            "minLength": 0
+          },
+          "especialidade": {
+            "type": "string",
+            "example": "hardware",
+            "maxLength": 80,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "email",
+          "especialidade",
+          "nome"
+        ]
+      },
+      "OrdemServicoAberturaRequest": {
+        "type": "object",
+        "properties": {
+          "equipamentoId": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "descricaoDefeito": {
+            "type": "string",
+            "example": "Notebook não liga e esquenta muito antes de desligar.",
+            "maxLength": 1000,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "descricaoDefeito",
+          "equipamentoId"
+        ]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "login": {
+            "type": "string",
+            "example": "gerente",
+            "minLength": 1
+          },
+          "senha": {
+            "type": "string",
+            "example": "senha-do-gerente",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "login",
+          "senha"
+        ]
+      },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "expiraEm": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "login": {
+            "type": "string"
+          },
+          "perfil": {
+            "type": "string",
+            "enum": [
+              "ATENDENTE",
+              "TECNICO",
+              "GERENTE"
+            ]
+          }
+        }
+      },
+      "AtribuicaoTecnicoRequest": {
+        "type": "object",
+        "properties": {
+          "tecnicoId": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          }
+        },
+        "required": [
+          "tecnicoId"
+        ]
+      },
+      "AlteracaoStatusRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "AGUARDANDO_ANALISE",
+              "ORCAMENTO_APROVADO",
+              "EM_REPARO",
+              "CONCLUIDO",
+              "ENTREGUE",
+              "CANCELADO"
+            ],
+            "example": "ORCAMENTO_APROVADO"
+          },
+          "observacao": {
+            "type": "string",
+            "example": "Cliente aprovou o orçamento por telefone.",
+            "maxLength": 500,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "PaginaResponseUsuarioResponse": {
+        "type": "object",
+        "properties": {
+          "conteudo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsuarioResponse"
+            }
+          },
+          "pagina": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tamanho": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElementos": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPaginas": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "primeira": {
+            "type": "boolean"
+          },
+          "ultima": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PaginaResponseTecnicoResponse": {
+        "type": "object",
+        "properties": {
+          "conteudo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TecnicoResponse"
+            }
+          },
+          "pagina": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tamanho": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElementos": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPaginas": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "primeira": {
+            "type": "boolean"
+          },
+          "ultima": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PaginaResponseOrdemServicoResponse": {
+        "type": "object",
+        "properties": {
+          "conteudo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrdemServicoResponse"
+            }
+          },
+          "pagina": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tamanho": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElementos": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPaginas": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "primeira": {
+            "type": "boolean"
+          },
+          "ultima": {
+            "type": "boolean"
+          }
+        }
+      },
+      "HistoricoStatusResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "statusAnterior": {
+            "type": "string",
+            "enum": [
+              "AGUARDANDO_ANALISE",
+              "ORCAMENTO_APROVADO",
+              "EM_REPARO",
+              "CONCLUIDO",
+              "ENTREGUE",
+              "CANCELADO"
+            ]
+          },
+          "statusNovo": {
+            "type": "string",
+            "enum": [
+              "AGUARDANDO_ANALISE",
+              "ORCAMENTO_APROVADO",
+              "EM_REPARO",
+              "CONCLUIDO",
+              "ENTREGUE",
+              "CANCELADO"
+            ]
+          },
+          "dataHora": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "observacao": {
+            "type": "string"
+          }
+        }
+      },
+      "PaginaResponseClienteResponse": {
+        "type": "object",
+        "properties": {
+          "conteudo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClienteResponse"
+            }
+          },
+          "pagina": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tamanho": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElementos": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPaginas": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "primeira": {
+            "type": "boolean"
+          },
+          "ultima": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PaginaResponseEquipamentoResponse": {
+        "type": "object",
+        "properties": {
+          "conteudo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EquipamentoResponse"
+            }
+          },
+          "pagina": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tamanho": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElementos": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPaginas": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "primeira": {
+            "type": "boolean"
+          },
+          "ultima": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearer-jwt": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
